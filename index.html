@@ -1,0 +1,48 @@
+<html lang="en"> 
+<head> 
+  <meta charset="utf-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1"> 
+  <title>Socket test</title> 
+</head> 
+<body> 
+  <div id="root"> 
+    <input id="limit" onchange="clear"> 
+    <div id="connections"></div> 
+    <div id="messages"></div> 
+  </div> 
+  <script src="https://cdn.socket.io/4.1.2/socket.io.min.js" integrity="sha384-toS6mmwu70G0fw54EGlWWeA4z3dyJ+dlXBtSURSKN4vyRFOcxd3Bzjj/AoOwY+Rg" crossorigin="anonymous"></script> 
+  <script> 
+    const connections = document.getElementById("connections"); 
+    const messages = [] 
+    const socks = [] 
+    function clear() { 
+      socks.forEach(f => { 
+        f.close(); 
+      }) 
+      socks.length = 0; 
+    } 
+    const interval = setInterval(() => { 
+      let limit = 100; 
+      let burst = 10; 
+      try { 
+        const iLimit = parseInt(document.getElementById("limit").nodeValue); 
+        if (iLimit) limit = Math.min(iLimit, 100); 
+      } catch(e) {} 
+      if (socks.length < limit) { 
+        for(let i = 0; i < burst; i++) { 
+          const sock = io({ 
+            transports: ["websocket"] 
+          }) 
+          socks.push(sock); 
+          sock.on("message", function(msg) { 
+            messages.push(msg); 
+          }); 
+        } 
+      } 
+      connections.innerHTML = socks.length + ' connections'; 
+      document.getElementById("messages").innerHTML = messages.length + 'messages'; 
+      messages.length = 0; 
+    }, 1000); 
+  </script> 
+</body> 
+</html>
